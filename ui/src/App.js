@@ -15,7 +15,7 @@ function App() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-
+  const API_BASE_URL = "https://localhost:5000/";
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -28,23 +28,50 @@ function App() {
     e.preventDefault();
     setIsLoading(true);
     
-    // TODO: Replace with actual API call to backend
-    setTimeout(() => {
-      // Mock calculation for now
-      const localCommission = parseFloat(formData.localSalesCount) * parseFloat(formData.averageSaleAmount) * 0.20;
-      const foreignCommission = parseFloat(formData.foreignSalesCount) * parseFloat(formData.averageSaleAmount) * 0.35;
-      const avalphaTechnologiesTotal = localCommission + foreignCommission;
-      
-      const competitorLocal = parseFloat(formData.localSalesCount) * parseFloat(formData.averageSaleAmount) * 0.02;
-      const competitorForeign = parseFloat(formData.foreignSalesCount) * parseFloat(formData.averageSaleAmount) * 0.0755;
-      const competitorTotal = competitorLocal + competitorForeign;
-      
+
+    fetch(`${API_BASE_URL}Commision`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch commission data');
+      }
+      const data = await response.json();
+      // Assuming backend returns: { avalphaTechnologiesCommission, competitorCommission }
       setResults({
-        avalphaTechnologiesCommission: avalphaTechnologiesTotal.toFixed(2),
-        competitorCommission: competitorTotal.toFixed(2)
+        avalphaTechnologiesCommission: data.avalphaTechnologiesCommissionAmount,
+        competitorCommission: data.competitorCommissionAmount,
       });
+    })
+    .catch((error) => {
+      console.error('Error fetching commission:', error);
+      alert('Error calculating commission. Please try again.');
+    })
+    .finally(() => {
       setIsLoading(false);
-    }, 1000);
+    });
+    
+    // // TODO: Replace with actual API call to backend
+    // setTimeout(() => {
+    //   // Mock calculation for now
+    //   const localCommission = parseFloat(formData.localSalesCount) * parseFloat(formData.averageSaleAmount) * 0.20;
+    //   const foreignCommission = parseFloat(formData.foreignSalesCount) * parseFloat(formData.averageSaleAmount) * 0.35;
+    //   const avalphaTechnologiesTotal = localCommission + foreignCommission;
+      
+    //   const competitorLocal = parseFloat(formData.localSalesCount) * parseFloat(formData.averageSaleAmount) * 0.02;
+    //   const competitorForeign = parseFloat(formData.foreignSalesCount) * parseFloat(formData.averageSaleAmount) * 0.0755;
+    //   const competitorTotal = competitorLocal + competitorForeign;
+      
+    //   setResults({
+    //     avalphaTechnologiesCommission: avalphaTechnologiesTotal.toFixed(2),
+    //     competitorCommission: competitorTotal.toFixed(2)
+    //   });
+    //   setIsLoading(false);
+    // }, 1000);
   };
 
   return (
