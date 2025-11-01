@@ -10,9 +10,33 @@ namespace AvalphaTechnologies.CommissionCalculator.Controllers
         [HttpPost]
         public IActionResult Calculate(CommissionCalculationRequest calculationRequest)
         {
-            return Ok(new CommissionCalculationResponse() { 
-                AvalphaTechnologiesCommissionAmount = 999,
-                CompetitorCommissionAmount = 100
+            // Constants
+            const decimal AvalphaLocalCommissionPct = 0.20m;
+            const decimal AvalphaForeignCommissionPct = 0.35m;
+            const decimal CompetitorLocalCommissionPct = 0.02m;
+            const decimal CompetitorForeignCommissionPct = 0.0755m;
+
+            // Input validation
+            if (calculationRequest.LocalSalesCount < 0) throw new ArgumentOutOfRangeException(nameof(calculationRequest.LocalSalesCount));
+            if (calculationRequest.ForeignSalesCount < 0) throw new ArgumentOutOfRangeException(nameof(calculationRequest.ForeignSalesCount));
+            if (calculationRequest.AverageSaleAmount < 0) throw new ArgumentOutOfRangeException(nameof(calculationRequest.AverageSaleAmount));
+
+            decimal localTotalSales = calculationRequest.LocalSalesCount * calculationRequest.AverageSaleAmount;
+            decimal foreignTotalSales = calculationRequest.ForeignSalesCount * calculationRequest.AverageSaleAmount;
+
+            decimal avalphaLocal = decimal.Round(AvalphaLocalCommissionPct * localTotalSales, 2, MidpointRounding.AwayFromZero);
+            decimal avalphaForeign = decimal.Round(AvalphaForeignCommissionPct * foreignTotalSales, 2, MidpointRounding.AwayFromZero);
+            decimal avalphaTotal = avalphaLocal + avalphaForeign;
+
+            decimal competitorLocal = decimal.Round(CompetitorLocalCommissionPct * localTotalSales, 2, MidpointRounding.AwayFromZero);
+            decimal competitorForeign = decimal.Round(CompetitorForeignCommissionPct * foreignTotalSales, 2, MidpointRounding.AwayFromZero);
+            decimal competitorTotal = competitorLocal + competitorForeign;
+
+
+            return Ok(new CommissionCalculationResponse()
+            {
+                AvalphaTechnologiesCommissionAmount = avalphaTotal,
+                CompetitorCommissionAmount = competitorTotal
             });
         }
     }
